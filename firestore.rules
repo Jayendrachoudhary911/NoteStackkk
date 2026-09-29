@@ -1,0 +1,120 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // HELPER FUNCTIONS
+    // ===============================================================
+
+    // Check if the request is from an authenticated user
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if the authenticated user matches the specified userId
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Check if the existing document belongs to the authenticated user
+    function isExistingOwner() {
+      return isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Check if the incoming document assigns ownership to the authenticated user
+    function isIncomingOwner() {
+      return isAuthenticated() && request.resource.data.userId == request.auth.uid;
+    }
+
+    // ===============================================================
+    // USER PROFILES COLLECTION (/users/{userId})
+    // ===============================================================
+    // Document ID is the user's Firebase Auth UID
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId) && request.resource.data.uid == userId;
+      allow update: if isOwner(userId) && request.resource.data.uid == userId;
+      allow delete: if isOwner(userId);
+    }
+
+    // ===============================================================
+    // TEAMS COLLECTION (/teams/{teamId})
+    // ===============================================================
+    // Workspaces for collaborative team note taking
+    match /teams/{teamId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (request.resource.data.ownerId == request.auth.uid || (request.resource.data.memberUids != null && request.auth.uid in request.resource.data.memberUids));
+      allow update: if isAuthenticated() && (resource.data.ownerId == request.auth.uid || (resource.data.adminUids != null && request.auth.uid in resource.data.adminUids) || request.auth.uid in resource.data.memberUids || (request.resource.data.memberUids != null && request.auth.uid in request.resource.data.memberUids));
+      allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // ===============================================================
+    // PRESENCE COLLECTION (/presence/{userId})
+    // ===============================================================
+    // Real-time active user heartbeats
+    match /presence/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+
+    // ===============================================================
+    // NOTES COLLECTION (/notes/{noteId})
+    // ===============================================================
+    // Personal notes or team workspace notes
+    match /notes/{noteId} {
+      allow read: if isExistingOwner() || (isAuthenticated() && resource.data.teamId != null);
+      allow create: if isIncomingOwner() && request.resource.data.title is string;
+      allow update: if isExistingOwner() || (isAuthenticated() && resource.data.teamId != null);
+      allow delete: if isExistingOwner() || (isAuthenticated() && resource.data.teamId != null);
+    }
+
+    // ===============================================================
+    // FOLDERS COLLECTION (/folders/{folderId})
+    // ===============================================================
+    // Folders created by the authenticated user
+    match /folders/{folderId} {
+      allow read: if isExistingOwner();
+      allow create: if isIncomingOwner() && request.resource.data.name is string;
+      allow update: if isExistingOwner() && isIncomingOwner();
+      allow delete: if isExistingOwner();
+    }
+
+    // ===============================================================
+    // TAGS COLLECTION (/tags/{tagId})
+    // ===============================================================
+    // Tags created by the authenticated user
+    match /tags/{tagId} {
+      allow read: if isExistingOwner();
+      allow create: if isIncomingOwner() && request.resource.data.name is string;
+      allow update: if isExistingOwner() && isIncomingOwner();
+      allow delete: if isExistingOwner();
+    }
+
+    // ===============================================================
+    // SHARES COLLECTION (/shares/{shareId})
+    // ===============================================================
+    // Public read and collaborative access for shared notes
+    match /shares/{shareId} {
+      // Any visitor (even unauthenticated) can view a note if marked public
+      // The note author can also view their own share record
+      allow get: if resource.data.isPublic == true || isExistingOwner();
+      
+      // Only the author can list their own share records
+      allow list: if isExistingOwner();
+
+      // Only the note author can create or delete the share record
+      allow create: if isIncomingOwner();
+      // Allow author, or public visitors when accessLevel == 'edit' or comments are allowed
+      allow update: if isExistingOwner() || (resource.data.isPublic == true && (resource.data.accessLevel == 'edit' || resource.data.allowComments == true));
+      allow delete: if isExistingOwner();
+    }
+
+    // ===============================================================
+    // DEFAULT DENY
+    // ===============================================================
+    // Fallback rule denying any access to unconfigured paths
+    match /{document=**} {
+      allow read, write: false;
+    }
+  }
+}

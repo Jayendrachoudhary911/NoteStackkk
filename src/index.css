@@ -1,13 +1,649 @@
-body {
+/* NoteStack Core Design System — Material 3 Expressive & Borderless Architecture */
+
+:root {
+  /* Default M3 Expressive Blue Dark Palette Tokens */
+  --accent: #88b7f0;
+  --accent-container: #121b2b;
+  --accent-foreground: #d3e7ff;
+  --ambient-gradient: radial-gradient(ellipse at 80% 30%, #0e346e8c 0%, #09090b 75%);
+  
+  --background: #09090b;
+  --foreground: #f3f4f6;
+  --surface: #111216;
+  --surface-container: #171920;
+  --surface-container-high: #20232d;
+  --surface-container-low: #0d0e12;
+  
+  --muted: #242731;
+  --muted-foreground: #9ca3af;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+
+  /* Elevation Language — No Traditional Outlines */
+  --elevation-1: inset 0 1px 1px rgba(255, 255, 255, 0.11), inset 0 -1px 1px rgba(255, 255, 255, 0.07), 0 1px 0px rgba(0, 0, 0, 0.1);
+  --elevation-2: inset 0 1px 1px rgba(255, 255, 255, 0.11), 0 1px 0px rgba(0, 0, 0, 0.1);
+  --elevation-hover: inset 0 1px 1px rgba(255, 255, 255, 0.18), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --elevation-dialog: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 20px 48px rgba(0, 0, 0, 0.5);
+
+  /* Radii */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 26px;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.2, 0, 0, 1);
+  --transition-normal: 250ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+[data-theme='light'] {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --surface: #ffffff;
+  --surface-container: #f1f5f9;
+  --surface-container-high: #e2e8f0;
+  --surface-container-low: #f8fafc;
+  
+  --muted: #e2e8f0;
+  --muted-foreground: #64748b;
+  --border-subtle: rgba(0, 0, 0, 0.05);
+
+  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.03);
+  --elevation-2: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --elevation-hover: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --elevation-dialog: 0 20px 48px rgba(0, 0, 0, 0.12);
+}
+
+/* Base Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  padding: 0;
+}
+
+html, body, #root {
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  background-color: var(--background);
+  color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+body {
+  background: var(--ambient-gradient), var(--background);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
+  overflow-x: hidden;
 }
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+/* Buttons, Cards, Dialogs — STRICT BORDERLESS */
+button, input, textarea, select {
+  font-family: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  outline: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Standard NoteStack Tactile Button */
+.ns-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: none;
+  transition: all var(--transition-fast);
+  box-shadow: var(--elevation-2);
+  user-select: none;
+}
+
+.ns-btn-primary {
+  background: var(--accent);
+  color: #09090b;
+}
+.ns-btn-primary:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: var(--elevation-hover);
+}
+.ns-btn-primary:active {
+  transform: translateY(0);
+}
+
+.ns-btn-secondary {
+  background: var(--surface-container);
+  color: var(--foreground);
+}
+.ns-btn-secondary:hover {
+  background: var(--surface-container-high);
+  transform: translateY(-1px);
+}
+.ns-btn-secondary:active {
+  transform: translateY(0);
+}
+
+.ns-btn-ghost {
+  box-shadow: none;
+  background: transparent;
+  color: var(--muted-foreground);
+}
+.ns-btn-ghost:hover {
+  background: var(--surface-container);
+  color: var(--foreground);
+}
+
+.ns-btn-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+.ns-btn-danger:hover {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+/* Card Surfaces — Clean Flat Surface, No Box Shadow */
+.ns-card {
+  background: var(--surface-container);
+  border-radius: var(--radius-lg);
+  box-shadow: none !important;
+  border: 1px solid var(--surface-container-highest);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.ns-card:hover {
+  box-shadow: none !important;
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+/* Slide-out Drawers */
+.ns-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  z-index: 1050;
+  display: flex;
+  justify-content: flex-end;
+  animation: nsFadeIn 150ms ease-out;
+}
+
+.ns-drawer {
+  background: var(--surface);
+  width: 100%;
+  max-width: 420px;
+  height: 100vh;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -6px 0 24px rgba(0, 0, 0, 0.25);
+  animation: nsSlideLeft 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+@keyframes nsSlideLeft {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Code Block Layout & Typography */
+.bn-block-content[data-content-type="codeBlock"],
+.bn-code-block,
+.bn-editor pre,
+pre.mantine-Code-root {
+  background: #14141f !important;
+  color: #e2e8f0 !important;
+  border-radius: var(--radius-md) !important;
+  padding: 16px 20px !important;
+  font-family: var(--font-mono), 'JetBrains Mono', 'Fira Code', Consolas, monospace !important;
+  font-size: 0.88rem !important;
+  line-height: 1.65 !important;
+  overflow-x: auto !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  margin: 12px 0 !important;
+  tab-size: 2 !important;
+}
+
+.bn-editor code {
+  font-family: var(--font-mono), monospace !important;
+}
+
+/* Dialog & Modal Overlay */
+.ns-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  animation: nsFadeIn 150ms ease-out;
+}
+
+.ns-dialog {
+  background: var(--surface);
+  box-shadow: var(--elevation-dialog);
+  border-radius: var(--radius-xl);
+  border: none;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: nsScaleIn 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Floating Menu / Dropdown Popover */
+.ns-menu {
+  background: var(--surface);
+  box-shadow: var(--elevation-dialog);
+  border-radius: var(--radius-md);
+  padding: 6px;
+  min-width: 190px;
+  z-index: 900;
+  animation: nsScaleIn 120ms ease-out;
+}
+
+.ns-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--foreground);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+  text-align: left;
+}
+
+.ns-menu-item:hover {
+  background: var(--surface-container-high);
+}
+
+.ns-menu-item.danger {
+  color: #ef4444;
+}
+.ns-menu-item.danger:hover {
+  background: rgba(239, 68, 68, 0.12);
+}
+
+/* Tooltip */
+[data-tooltip] {
+  position: relative;
+}
+[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-container-high);
+  color: var(--foreground);
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  box-shadow: var(--elevation-2);
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* Shimmer Loading Animation */
+@keyframes nsShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.ns-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-container) 25%,
+    var(--surface-container-high) 50%,
+    var(--surface-container) 75%
+  );
+  background-size: 200% 100%;
+  animation: nsShimmer 1.8s infinite;
+  border-radius: var(--radius-md);
+}
+
+/* Keyframe Animations */
+@keyframes nsFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes nsScaleIn {
+  from { opacity: 0; transform: scale(0.96) translateY(4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes nsSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* BlockNote Overrides to match NoteStack theme seamlessly */
+.bn-container {
+  font-family: var(--font-sans) !important;
+  background: transparent !important;
+}
+
+.bn-editor {
+  background: transparent !important;
+  padding-inline: 0 !important;
+  color: var(--foreground) !important;
+}
+
+.bn-block-content {
+  font-size: 1.05rem !important;
+  line-height: 1.7 !important;
+  color: var(--foreground) !important;
+}
+
+.bn-toolbar, .bn-side-menu {
+  border: none !important;
+  box-shadow: var(--elevation-dialog) !important;
+  background: var(--surface) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+/* Print Stylesheet for Note Export */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .no-print, header, nav, aside, .ns-editor-toolbar {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .ns-note-print-surface {
+    padding: 20mm !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Responsive Shell Breakpoints */
+@media (min-width: 769px) {
+  .desktop-sidebar {
+    display: block !important;
+  }
+  #mobile-top-header {
+    display: none !important;
+  }
+  #mobile-bottom-nav {
+    display: none !important;
+  }
+  .desktop-preview {
+    display: block !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .desktop-sidebar {
+    display: none !important;
+  }
+  #mobile-top-header {
+    display: flex !important;
+  }
+  #mobile-bottom-nav {
+    display: flex !important;
+  }
+  .desktop-preview {
+    display: none !important;
+  }
+  .main-content-scroll {
+    padding-bottom: 80px !important;
+  }
+}
+
+/* Accessibility: Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Comment Inline Highlights & Badges */
+.ns-comment-highlight {
+  background: rgba(245, 158, 11, 0.22) !important;
+  border-bottom: 2px dashed #f59e0b !important;
+  border-radius: 4px !important;
+  padding: 1px 3px !important;
+  color: inherit !important;
+  position: relative !important;
+  cursor: pointer !important;
+  transition: background 0.2s ease, transform 0.2s ease !important;
+}
+
+.ns-comment-highlight:hover {
+  background: rgba(245, 158, 11, 0.38) !important;
+}
+
+.ns-comment-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  vertical-align: middle !important;
+  margin-left: 4px !important;
+  padding: 1px 6px !important;
+  border-radius: 12px !important;
+  background: #f59e0b !important;
+  color: #ffffff !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.35) !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.ns-comment-badge:hover {
+  transform: scale(1.12) !important;
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.5) !important;
+}
+
+.ns-comment-para-badge {
+  position: absolute !important;
+  right: -32px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  background: #f59e0b !important;
+  color: #ffffff !important;
+  border-radius: 50% !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4) !important;
+  z-index: 10 !important;
+  transition: transform 0.15s ease !important;
+}
+
+.ns-comment-para-badge:hover {
+  transform: translateY(-50%) scale(1.15) !important;
+}
+
+/* Fluid Theme & Accent Switching Animation */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Keyframe Micro-Animations */
+@keyframes floatIllustration {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(0.5deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 25px -5px var(--accent);
+    opacity: 0.85;
+  }
+  50% {
+    box-shadow: 0 0 45px 0px var(--accent);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmerAnimation {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-float {
+  animation: floatIllustration 5s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+/* Mobile Bottom Navigation Dock Enhancements */
+#mobile-bottom-nav {
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.2);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--surface);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  position: relative;
+  transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.mobile-nav-item:active {
+  transform: scale(0.92);
+}
+
+.mobile-nav-fab {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px -2px var(--accent);
+  border: none;
+  cursor: pointer;
+  margin-top: -20px;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.mobile-nav-fab:active {
+  transform: scale(0.9) translateY(2px);
+}
+
+/* Responsive Containers & Touch Scaling */
+.ns-page-container {
+  padding: 36px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .ns-page-container {
+    padding: 20px 16px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .ns-dialog {
+    width: 94vw !important;
+    max-width: 94vw !important;
+    padding: 20px 16px !important;
+    border-radius: var(--radius-lg) !important;
+  }
+  .ns-drawer {
+    width: 92vw !important;
+    max-width: 92vw !important;
+    padding: 20px 16px !important;
+  }
+}
+
+
+
+
